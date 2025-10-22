@@ -1,0 +1,147 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "mysql"
+  url       = env("DATABASE_URL")
+}
+
+enum ProjectType {
+  RESIDENTIAL
+  OFFICE
+}
+
+enum InteriorStyle {
+  ART_DECO
+  BOHEMIAN
+  COASTAL
+  RUSTIC
+  CONTEMPORARY
+  ETHNIC
+  INDUSTRIAL
+  SCANDINAVIAN
+  VINTAGE
+  MINIMALIST
+}
+
+enum RoomType {
+  LIVING_ROOM
+  BEDROOM
+  KITCHEN
+  BATHROOM
+  OFFICE
+  DINING_ROOM
+  BALCONY
+  STUDY
+  HALLWAY
+  OTHER
+}
+
+enum DesignStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  name          String
+  userType      String
+  organization  String?
+  password      String
+  isVerified    Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  projects      Project[]
+}
+
+model Project {
+  id          String        @id @default(uuid())
+  name        String
+  description String?
+  type        ProjectType
+  style       InteriorStyle
+  isActive    Boolean       @default(true)
+  userId      String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  roomCount   Int           @default(0)
+
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rooms       Room[]
+}
+
+model Room {
+  id               String     @id @default(uuid())
+  projectId        String
+  name             String?
+  type             RoomType
+  length           Float
+  width            Float
+  height           Float
+  materials        Json       // JSON array
+  ambientColor     String?
+  freePrompt       String?
+  originalImageUrl String?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  designCount      Int        @default(0)
+  uploadCount      Int        @default(0)
+  area             Float      // length * width
+  volume           Float      // length * width * height
+
+  project          Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  designs          Design[]
+  uploads          Upload[]
+}
+
+model Design {
+  id             String       @id @default(uuid())
+  roomId         String
+  imageUrl       String
+  prompt         String
+  aiProvider     String       // "openai" or "replicate"
+  status         DesignStatus @default(PENDING)
+  processingTime Int?
+  error          String?
+  metadata       Json?        // JSON object
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  allImageUrls   Json         // JSON array
+
+  room           Room         @relation(fields: [roomId], references: [id], onDelete: Cascade)
+}
+
+model Upload {
+  id            String   @id @default(uuid())
+  roomId        String?
+  filename      String
+  originalName  String
+  mimeType      String
+  size          Int
+  url           String
+  cloudinaryId  String?
+  metadata      Json?    // JSON object
+  createdAt     DateTime @default(now())
+
+  room          Room?    @relation(fields: [roomId], references: [id], onDelete: SetNull)
+}
+
+model DesignJob {
+  id               String   @id @default(uuid())
+  sessionId        String   @unique
+  userId          String?
+  originalImageUrl String
+  status          String   @default("pending")
+  progress        Int      @default(0)
+  analysis        String?
+  generatedImages Json // Stored as JSON array
+  error          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
