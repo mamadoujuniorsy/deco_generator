@@ -1,34 +1,35 @@
-# Backend Refactor Plan
+# ✅ Migration Replicate → Home Designs AI - TERMINÉE
 
-## 1. Update Prisma Schema
-- [x] Add User, Project, Room, Design, Upload models with enums and relations
-- [x] Keep existing DesignJob model
+## ✅ Étapes Complétées:
+- [x] Service Home Designs AI créé (`src/libs/homedesign.ts`)
+- [x] Endpoint `/api/generate` mis à jour avec Home Designs AI
+- [x] Endpoint `/api/process-design` converti
+- [x] Endpoint `/api/generate-design` converti
+- [x] Endpoint `/api/design-options` créé (nouveau)
+- [x] Vérification de HOME_DESIGN_API_TOKEN implémentée
+- [x] Support form-data et base64
+- [x] Paramètres configurables (design_style, room_type, etc.)
+- [x] Traduction automatique FR→EN
+- [x] Polling avec gestion timeout (60 tentatives, 1s)
+- [x] Gestion complète des erreurs
+- [x] Types TypeScript mis à jour (`aiProvider: "homedesign"`)
+- [x] Hooks API mis à jour
+- [x] Composant `DesignOptionsSelect` créé
+- [x] Page de test complète (`/test-homedesign`)
+- [x] Documentation complète (HOME_DESIGNS_AI.md, MIGRATION.md, TESTING_GUIDE.md)
+- [x] Dépendance `replicate` retirée de package.json
+- [x] Migration SQL créée pour la base de données
 
-## 2. Generate Prisma Client
-- [x] Run prisma generate
+## 🚀 Pour Tester:
+1. Configurez `HOME_DESIGN_API_TOKEN` dans `.env.local`
+2. Lancez `npm run dev`
+3. Visitez http://localhost:3000/test-homedesign
+4. Consultez `TESTING_GUIDE.md` pour plus de détails
 
-## 3. Create Model Functions
-- [x] Add libs/models/User.ts, Project.ts, Room.ts with CRUD functions
-- [x] Add libs/models/Design.ts, Upload.ts
-
-## 4. Create API Routes
-- [x] Auth: /api/auth/register, /api/auth/login
-- [x] Auth: /api/auth/logout
-- [x] Projects: /api/projects (CRUD)
-- [x] Rooms: /api/rooms (CRUD)
-- [x] Designs: /api/designs (CRUD, generate)
-- [x] Uploads: /api/uploads
-
-## 5. Update Existing Routes
-- [x] Integrate new models with existing design job routes
-- [x] Add authentication middleware
-
-## 6. Run Migration
-- [x] prisma migrate dev
-
-## 7. Test API Routes
-- [x] Verify endpoints work
-
-## 8. Standardize API Response Format
-- [x] Update all API routes to return consistent { success: true, data: ... } for success and { success: false, error: ... } for errors
-- [x] Updated routes: auth/register, auth/login, projects, rooms, designs, uploads, auth/logout, generate-design, upload
+## 📋 Prochaines Étapes (Optionnel):
+- [ ] Exécuter la migration SQL si vous avez des données existantes
+- [ ] Tester tous les scénarios dans TESTING_GUIDE.md
+- [ ] Intégrer le composant DesignOptionsSelect dans les pages existantes
+- [ ] Ajouter un cache Redis pour les designs populaires
+- [ ] Créer une galerie de styles
+- [ ] Déployer en production

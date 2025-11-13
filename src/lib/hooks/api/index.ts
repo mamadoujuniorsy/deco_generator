@@ -456,6 +456,33 @@ export const useGenerateDesign = (
   });
 };
 
+export const useCreateDesign = (
+  options?: UseMutationOptions<any, Error, {
+    roomId: string;
+    designData: {
+      prompt: string;
+      style: string;
+      images: string[];
+    };
+  }>
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: designsApi.createDesign,
+    onSuccess: (design: any) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.designs.all });
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.designs.byRoom(design?.roomId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.rooms.detail(design?.roomId),
+      });
+    },
+    ...options,
+  });
+};
+
 export const useDeleteDesign = (
   options?: UseMutationOptions<void, Error, string>
 ) => {
@@ -476,7 +503,7 @@ export const useRegenerateDesign = (
     Error,
     {
       id: string;
-      options?: { aiProvider?: "openai" | "replicate"; customPrompt?: string };
+      options?: { aiProvider?: "openai" | "homedesign"; customPrompt?: string };
     }
   >
 ) => {

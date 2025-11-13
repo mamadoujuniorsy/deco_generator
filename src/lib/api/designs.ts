@@ -31,6 +31,29 @@ export const designsApi = {
     return response.data.data!;
   },
 
+  // Create design directly (save generated design)
+  createDesign: async (data: {
+    roomId: string;
+    designData: {
+      prompt: string;
+      style: string;
+      images: string[];
+    };
+  }): Promise<Design> => {
+    const response = await apiClient.post<ApiResponse<Design>>(
+      "/designs",
+      {
+        roomId: data.roomId,
+        prompt: data.designData.prompt,
+        style: data.designData.style,
+        images: data.designData.images,
+        status: 'completed',
+        aiProvider: 'homedesign'
+      }
+    );
+    return response.data.data!;
+  },
+
   // Get design by ID
   getDesign: async (id: string): Promise<Design> => {
     const response = await apiClient.get<ApiResponse<Design>>(`/designs/${id}`);
@@ -53,7 +76,7 @@ export const designsApi = {
   // Regenerate design
   regenerateDesign: async (
     id: string,
-    options?: { aiProvider?: "openai" | "replicate"; customPrompt?: string }
+    options?: { aiProvider?: "openai" | "homedesign"; customPrompt?: string }
   ): Promise<Design> => {
     const response = await apiClient.post<ApiResponse<Design>>(
       `/designs/${id}/regenerate`,

@@ -400,7 +400,7 @@ export const useRegenerateDesign = (
     Error,
     {
       id: string;
-      options?: { aiProvider?: "openai" | "replicate"; customPrompt?: string };
+      options?: { aiProvider?: "openai" | "homedesign"; customPrompt?: string };
     }
   >
 ) => {

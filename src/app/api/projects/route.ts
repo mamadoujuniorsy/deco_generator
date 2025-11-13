@@ -4,9 +4,9 @@ import { CreateProjectDto, ProjectQuery, ProjectType, InteriorStyle } from '@/ty
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('userId')
-
+    // Get userId from middleware header
+    const userId = request.headers.get('x-user-id')
+    
     if (!userId) {
       return NextResponse.json(
         { success: false, error: 'User ID is required' },
@@ -14,6 +14,7 @@ export async function GET(request: Request) {
       )
     }
 
+    const { searchParams } = new URL(request.url)
     const query: ProjectQuery = {
       page: parseInt(searchParams.get('page') || '1'),
       limit: parseInt(searchParams.get('limit') || '10'),
@@ -24,6 +25,12 @@ export async function GET(request: Request) {
     }
 
     const result = await getProjectsByUserId(userId, query)
+
+    console.log('📊 Projects API Response:', {
+      userId,
+      totalProjects: result.projects.length,
+      pagination: result.pagination
+    })
 
     return NextResponse.json({
       success: true,
@@ -40,9 +47,9 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const body: CreateProjectDto & { userId: string } = await request.json()
-    const { userId, ...projectData } = body
-
+    // Get userId from middleware header
+    const userId = request.headers.get('x-user-id')
+    
     if (!userId) {
       return NextResponse.json(
         { success: false, error: 'User ID is required' },
@@ -50,8 +57,10 @@ export async function POST(request: Request) {
       )
     }
 
+    const body: CreateProjectDto = await request.json()
+
     const project = await createProject({
-      ...projectData,
+      ...body,
       userId
     })
 

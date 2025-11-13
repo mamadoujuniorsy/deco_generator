@@ -44,7 +44,7 @@ function CreateLayoutContent() {
 
 export default function CreateLayoutMainSection() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div className="text-white text-center py-8">Chargement...</div>}>
       <CreateLayoutContent />
     </Suspense>
   );

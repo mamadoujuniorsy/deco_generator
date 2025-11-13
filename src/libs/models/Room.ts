@@ -11,6 +11,7 @@ export async function createRoom(roomData: {
   materials: string[];
   ambientColor?: string;
   freePrompt?: string;
+  originalImageUrl?: string;
 }) {
   const area = roomData.length * roomData.width
   const volume = area * roomData.height

@@ -9,6 +9,7 @@ const API_BASE_URL = "http://localhost:3000/api";
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000, // 30 seconds
+  withCredentials: true, // ✅ Envoyer les cookies avec chaque requête
   headers: {
     "Content-Type": "application/json",
   },
@@ -74,18 +75,22 @@ apiClient.interceptors.request.use(
 
     // Check if token exists and is expired
     if (token && authUtils.isTokenExpired(token)) {
-      console.log("Token expired, attempting to refresh...");
+      console.log("⏱️ Token expired, refreshing...");
       token = await refreshAuthToken();
     }
 
     // Attach token to request
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      console.log('✅ Token attached to request:', token.substring(0, 30) + '...');
+    } else {
+      console.warn('⚠️ No token found - user may not be authenticated');
     }
 
     return config;
   },
   (error) => {
+    console.error('❌ Request interceptor error:', error);
     return Promise.reject(error);
   }
 );

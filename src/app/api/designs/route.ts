@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createDesign, getDesignsByRoomId, updateDesignStatus, updateDesign } from '@/libs/models/Design'
 import { getRoomById } from '@/libs/models/Room'
-import { GenerateDesignDto, DesignQuery, DesignStatus } from '@/types/api'
+import { DesignQuery, DesignStatus } from '@/types/api'
 import { replicate } from '@/libs/replicate'
 import { put } from '@vercel/blob'
 
@@ -21,7 +21,7 @@ export async function GET(request: Request) {
       page: parseInt(searchParams.get('page') || '1'),
       limit: parseInt(searchParams.get('limit') || '10'),
       status: searchParams.get('status') as DesignStatus,
-      aiProvider: searchParams.get('aiProvider') as "openai" | "replicate"
+      aiProvider: searchParams.get('aiProvider') as "openai" | "homedesign" | undefined
     }
 
     const result = await getDesignsByRoomId(roomId, query)
@@ -41,9 +41,28 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const body: GenerateDesignDto = await request.json()
-    const { roomId, customPrompt, aiProvider } = body
+    const body = await request.json()
+    const { roomId, customPrompt, aiProvider, prompt, images, status } = body
 
+    // Check if this is a direct save (images already generated)
+    if (images && Array.isArray(images) && images.length > 0) {
+      // Direct save of already generated design
+      const design = await createDesign({
+        roomId,
+        imageUrl: images[0], // First image as main
+        prompt: prompt || customPrompt || 'Generated design',
+        aiProvider: aiProvider || 'homedesign',
+        status: status || DesignStatus.COMPLETED,
+        allImageUrls: images
+      })
+
+      return NextResponse.json({
+        success: true,
+        data: design
+      }, { status: 201 })
+    }
+
+    // Otherwise, generate with Replicate (existing flow)
     // Get room to access the original image
     const room = await getRoomById(roomId)
     if (!room || !room.originalImageUrl) {

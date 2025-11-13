@@ -48,6 +48,8 @@ export default function Home() {
     if (!selectedImage || !prompt) return;
 
     setIsLoading(true);
+    setStatusMessage('Préparation de l\'image...');
+    
     try {
       // Convertir le fichier en base64
       const base64Image = await new Promise<string>((resolve) => {
@@ -55,6 +57,9 @@ export default function Home() {
         reader.onload = (e) => resolve(e.target?.result as string);
         reader.readAsDataURL(selectedImage);
       });
+
+      setStatusMessage('Envoi à Home Designs AI...');
+      console.log('📤 Génération avec Home Designs AI...');
 
       const response = await fetch('/api/generate', {
         method: 'POST',
@@ -64,6 +69,11 @@ export default function Home() {
         body: JSON.stringify({
           image: base64Image,
           prompt: prompt,
+          designStyle: 'Modern',
+          roomType: 'Living Room',
+          aiIntervention: 'Extreme', // ✅ Extreme pour mieux respecter les prompts
+          noDesign: 1, // ✅ 1 image pour plus rapide
+          keepStructuralElement: false // ✅ false pour plus de liberté créative
         }),
       });
 
@@ -73,12 +83,15 @@ export default function Home() {
         throw new Error(data.error || 'Erreur lors de la génération');
       }
 
+      console.log('✅ Génération réussie!', data);
       setGeneratedImages(data.images || []);
-      setOriginalAnalysis(data.originalAnalysis || '');
-      setEditInstructions(data.editInstructions || '');
+      setOriginalAnalysis(data.note || '');
+      setEditInstructions(`Design généré avec succès!\nStyle: Modern\nPièce: Living Room\nNiveau d'intervention: Moyen\nNombre de designs: ${data.images?.length || 0}`);
+      setStatusMessage('');
     } catch (error: any) {
-      console.error('Erreur lors de la génération:', error);
-      alert(`Pour la vraie modification d'image, vous devez configurer :\n- Replicate API (gratuit avec limite)\n- Ou OpenAI DALL-E (payant)\n\nErreur: ${error.message}`);
+      console.error('❌ Erreur lors de la génération:', error);
+      setStatusMessage('');
+      alert(`Erreur avec Home Designs AI:\n${error.message}\n\nVérifiez que HOME_DESIGN_API_TOKEN est configuré dans .env.local`);
     } finally {
       setIsLoading(false);
     }
@@ -93,7 +106,7 @@ export default function Home() {
             🏠 Déco Generator AI
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-300">
-            Transformez votre intérieur avec l'intelligence artificielle
+            Transformez votre intérieur avec l&apos;intelligence artificielle
           </p>
         </div>
 
@@ -167,12 +180,23 @@ export default function Home() {
               {isLoading ? (
                 <div className="flex items-center justify-center space-x-2">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Modification en cours...</span>
+                  <span>{statusMessage || 'Modification en cours...'}</span>
                 </div>
               ) : (
-                '🔄 Modifier mon image avec l\'IA'
+                '🎨 Générer avec Home Designs AI'
               )}
             </button>
+            
+            {isLoading && statusMessage && (
+              <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
+                <p className="text-blue-700 dark:text-blue-300 text-sm text-center">
+                  ⏳ {statusMessage}
+                </p>
+                <p className="text-blue-600 dark:text-blue-400 text-xs text-center mt-2">
+                  Cela peut prendre 30-60 secondes...
+                </p>
+              </div>
+            )}
           </div>
         )}
 

@@ -86,8 +86,8 @@ model Room {
   height           Float
   materials        Json       // JSON array
   ambientColor     String?
-  freePrompt       String?
-  originalImageUrl String?
+  freePrompt       String?    @db.Text
+  originalImageUrl String?    @db.LongText
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
   designCount      Int        @default(0)

@@ -1,81 +1,63 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import Cookies from "js-cookie";
-
-// Cookie configuration
-const COOKIE_OPTIONS = {
-  secure: process.env.NODE_ENV === "production", // Only use secure in production (HTTPS)
-  sameSite: "strict" as const, // CSRF protection
-  expires: 7, // 7 days
-};
-
-const REFRESH_COOKIE_OPTIONS = {
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "strict" as const,
-  expires: 30, // 30 days for refresh token
-};
-
-// Cookie names
-export const COOKIE_NAMES = {
+// Storage keys
+export const STORAGE_KEYS = {
   ACCESS_TOKEN: "auth_token",
   REFRESH_TOKEN: "refresh_token",
   USER_DATA: "user_data",
 } as const;
 
-// Token management functions
+// Token management with localStorage (secure enough for JWT)
 export const tokenStorage = {
-  // Set tokens
   setTokens: (tokens: {
     token: string;
     refreshToken: string;
     expiresIn: string;
   }) => {
     try {
-      // Set access token
-      Cookies.set(COOKIE_NAMES.ACCESS_TOKEN, tokens.token, COOKIE_OPTIONS);
-
-      // Set refresh token with longer expiry
-      Cookies.set(
-        COOKIE_NAMES.REFRESH_TOKEN,
-        tokens.refreshToken,
-        REFRESH_COOKIE_OPTIONS
-      );
-
+      if (typeof window === 'undefined') return false;
+      
+      localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, tokens.token);
+      localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, tokens.refreshToken);
+      
+      console.log('✅ Tokens saved to localStorage');
       return true;
     } catch (error) {
-      console.error("Error setting tokens in cookies:", error);
+      console.error("❌ Error saving tokens:", error);
       return false;
     }
   },
 
-  // Get access token
   getAccessToken: (): string | null => {
     try {
-      return Cookies.get(COOKIE_NAMES.ACCESS_TOKEN) || null;
+      if (typeof window === 'undefined') return null;
+      return localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
     } catch (error) {
-      console.error("Error getting access token from cookies:", error);
+      console.error("❌ Error getting access token:", error);
       return null;
     }
   },
 
-  // Get refresh token
   getRefreshToken: (): string | null => {
     try {
-      return Cookies.get(COOKIE_NAMES.REFRESH_TOKEN) || null;
+      if (typeof window === 'undefined') return null;
+      return localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
     } catch (error) {
-      console.error("Error getting refresh token from cookies:", error);
+      console.error("❌ Error getting refresh token:", error);
       return null;
     }
   },
 
-  // Clear all tokens
   clearTokens: () => {
     try {
-      Cookies.remove(COOKIE_NAMES.ACCESS_TOKEN);
-      Cookies.remove(COOKIE_NAMES.REFRESH_TOKEN);
-      Cookies.remove(COOKIE_NAMES.USER_DATA);
+      if (typeof window === 'undefined') return false;
+      
+      localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.USER_DATA);
+      
+      console.log('✅ Tokens cleared');
       return true;
     } catch (error) {
-      console.error("Error clearing tokens from cookies:", error);
+      console.error("❌ Error clearing tokens:", error);
       return false;
     }
   },
@@ -88,36 +70,42 @@ export const tokenStorage = {
 
 // User data management
 export const userStorage = {
-  // Set user data
   setUser: (user: any) => {
     try {
+      if (typeof window === 'undefined') return false;
+      
       const userData = JSON.stringify(user);
-      Cookies.set(COOKIE_NAMES.USER_DATA, userData, COOKIE_OPTIONS);
+      localStorage.setItem(STORAGE_KEYS.USER_DATA, userData);
+      
+      console.log('✅ User data saved');
       return true;
     } catch (error) {
-      console.error("Error setting user data in cookies:", error);
+      console.error("❌ Error saving user data:", error);
       return false;
     }
   },
 
-  // Get user data
   getUser: (): any | null => {
     try {
-      const userData = Cookies.get(COOKIE_NAMES.USER_DATA);
+      if (typeof window === 'undefined') return null;
+      
+      const userData = localStorage.getItem(STORAGE_KEYS.USER_DATA);
       return userData ? JSON.parse(userData) : null;
     } catch (error) {
-      console.error("Error getting user data from cookies:", error);
+      console.error("❌ Error getting user data:", error);
       return null;
     }
   },
 
-  // Clear user data
   clearUser: () => {
     try {
-      Cookies.remove(COOKIE_NAMES.USER_DATA);
+      if (typeof window === 'undefined') return false;
+      
+      localStorage.removeItem(STORAGE_KEYS.USER_DATA);
+      console.log('✅ User data cleared');
       return true;
     } catch (error) {
-      console.error("Error clearing user data from cookies:", error);
+      console.error("❌ Error clearing user data:", error);
       return false;
     }
   },

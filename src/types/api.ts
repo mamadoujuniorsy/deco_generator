@@ -129,7 +129,7 @@ export interface Design {
   roomId: string;
   imageUrl: string;
   prompt: string;
-  aiProvider: "openai" | "replicate";
+  aiProvider: "openai" | "homedesign";
   status: DesignStatus;
   processingTime?: number;
   error?: string;
@@ -219,7 +219,7 @@ export interface UpdateRoomDto {
 export interface GenerateDesignDto {
   roomId: string;
   customPrompt?: string;
-  aiProvider?: "openai" | "replicate";
+  aiProvider?: "openai" | "homedesign";
 }
 
 // Query Types
@@ -244,7 +244,7 @@ export interface DesignQuery {
   limit?: number;
   roomId?: string;
   status?: DesignStatus;
-  aiProvider?: "openai" | "replicate";
+  aiProvider?: "openai" | "homedesign";
 }
 
 export interface UploadQuery {
